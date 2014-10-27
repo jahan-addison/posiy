@@ -47,7 +47,7 @@ Lexer.prototype = (function() {
    return {
     Constructor: Lexer,
     getNextRule: function() {
-      switch (this.pattern[this._pointer+1]) {
+      switch (this.pattern[this._pointer]) {
         case '*':
           this._pointer++;
           this._scanner      = this.pattern[this._pointer-1];
@@ -56,36 +56,20 @@ Lexer.prototype = (function() {
           return tokens['T_KLEENE_STAR'];
         case '|':
           this._pointer++;
-          this._scanner = [];
-          if (stack.length) {
-            this._scanner.push(stack.pop());
-            this._scanner.push(this.pattern[++this._pointer]);
-          } else {
-            this._scanner.push(this.pattern[this._pointer-1]);
-            this._pointer++;
-            this._scanner.push(this.pattern[this._pointer]);            
-          }
+          this._scanner = undefined;
           this.current_token = tokens['T_UNION'];
           return tokens['T_UNION'];
       }
-      this._pointer++;
       if (inAlphabet(this.pattern[this._pointer])) {
-        this._scanner = [];
-        this._scanner.push(this.pattern[this._pointer-1]);
-        this._scanner.push(this.pattern[this._pointer]);
-        this.current_token = tokens['T_CONCAT'];
-        return tokens['T_CONCAT'];
-      }
-      if (!this.pattern[this._pointer]) {
-        if (this.pattern.length === 1 && inAlphabet(this.pattern[this._pointer-1])) {
-          this.current_token = tokens['T_CHAR'];
-          this._pointer--;
-          return tokens['T_CHAR'];
-        }
-        this._scanner = undefined;
-        this.current_token = tokens['T_EMPTY'];
-        return tokens['T_EMPTY'];
-      }
+        this._scanner = this.pattern[this._pointer];
+        this._pointer++;
+        this.current_token = tokens['T_CHAR'];
+        return tokens['T_CHAR'];
+       }
+      this._scanner = undefined;
+      this._pointer++;
+      this.current_token = tokens['T_EMPTY'];
+      return tokens['T_EMPTY'];
     }
   };
 })();

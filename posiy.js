@@ -18,3 +18,13 @@ Posiy.prototype.test = function(str) {
 
 var regex = new Posiy('a|b');
 console.log(regex.test('a'));
+/*
+regex.getNextRule();
+console.log(regex);
+regex.getNextRule();
+console.log(regex);
+regex.getNextRule();
+console.log(regex);
+regex.getNextRule();
+console.log(regex);
+*/
