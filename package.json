@@ -1,0 +1,17 @@
+{
+  "name": "posiy",
+  "version": "0.1.0",
+  "description": "A small POSIX regex implementation in Javascript",
+  "main": "posiy.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jahan Addison",
+  "license": "MIT",
+  "dependencies": {
+    "statemachines": "^0.1.1"
+  },
+  "devDependencies": {
+    "async": "^0.9.0"
+  }
+}
