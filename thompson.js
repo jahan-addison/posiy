@@ -1,10 +1,10 @@
-var Lexer = require('./lexer');
+var Parser = require('./parser');
 
 /* The McNaughton-Yamada-Thompson Algorithm */
 
 var Thompson = function(pattern) {
   this._pattern = pattern;
-  this._Lexer   = new Lexer(pattern);
+  this._parser  = new Parser(pattern);
 }
 
 
@@ -13,38 +13,58 @@ Thompson.prototype = (function() {
   /*
    ** Private
    */
-  var state = 0,
-      stack = [],
-      temp,
-      temp2;
+  var automaton       = [],
+      stack           = [],
+      state           = 0,
+      temp, nfa,
+      operatorOrder   = Object.freeze({
+        '(': 1,
+        ')': 1,
+        '*': 2,
+        '.': 3, 
+        '|': 4,
+       });
 
-  var emptyExpression = function(automaton) {
-    automaton.push({"": [++state]});
-    stack.push(state-1);
-    automaton.push({"": [++state]});
+  var symbol = function(s) {
+    nfa     = [];
+    temp    = {};
+    temp[s] = [++state];
+    nfa.push(temp);
+    return nfa; 
   };
-
-  var symbol = function(n, automaton) {
-    if (automaton.length > 1) {
-      automaton.pop();
-      state--;
-    }
-    temp = {};
-    temp[n] = [++state];
-    automaton.push(temp);
-    stack.push(state-1);
-    automaton.push({"": [++state]});    
-  };
-
-  var unionExpression = function(n, automaton) {
-  }
 
   /*
    ** Public
    */
 
   var transform = function() {
-    // go recursion
+    var RPNArray = this._parser.parse(),
+        token;
+    while ((token = RPNArray.shift())) {
+      if (!(token in operatorOrder)) {
+        stack.push(symbol(token));
+      } else {
+        switch(token) {
+          case '.':
+            var e2 = stack.shift(),
+                e1 = stack.shift();
+            if (e2) {
+              e2.forEach(function(e) {
+                automaton.push(e);
+              });
+            }
+            if (e1) {
+              e1.forEach(function(e) {
+                automaton.push(e);
+              });
+            }
+        }
+      }
+    }
+    if (!RPNArray.length) {
+      automaton.push({});
+    }
+    return automaton;
   };
 
   return {
