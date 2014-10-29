@@ -23,15 +23,12 @@ Lexer.prototype = (function() {
     T_EMPTY:          'EMPTY',
     T_KLEENE_STAR:    'KLEENE_STAR',
     T_UNION:          'UNION',
-    T_CONCAT:         'CONCAT',
     T_CHAR:           'CHAR'
   });
 
-  var stack = [];
-
   var alphabet = ['abcdefghijklmnopqrstuvwxyz',
     'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-    '0123456789!@#%\'"-_+=,.'
+    '0123456789!@#%\'"-_=,'
   ].join('').split('');
 
   var inAlphabet = function(e) {
@@ -46,12 +43,11 @@ Lexer.prototype = (function() {
 
    return {
     Constructor: Lexer,
-    getNextRule: function() {
+    getNextToken: function() {
       switch (this.pattern[this._pointer]) {
         case '*':
           this._pointer++;
-          this._scanner      = this.pattern[this._pointer-1];
-          stack.push(this._scanner);
+          this._scanner      = undefined;
           this.current_token = tokens['T_KLEENE_STAR'];
           return tokens['T_KLEENE_STAR'];
         case '|':
@@ -66,10 +62,11 @@ Lexer.prototype = (function() {
         this.current_token = tokens['T_CHAR'];
         return tokens['T_CHAR'];
        }
-      this._scanner = undefined;
-      this._pointer++;
-      this.current_token = tokens['T_EMPTY'];
-      return tokens['T_EMPTY'];
+       if (!this.pattern[this._pointer]) {
+        this._scanner = undefined;
+        this.current_token = tokens['T_EMPTY'];
+        return tokens['T_EMPTY'];
+      }
     }
   };
 })();
