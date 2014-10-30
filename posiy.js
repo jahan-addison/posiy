@@ -14,19 +14,5 @@ Posiy.prototype.test = function(str) {
   return DFA.test(str);
 };
 
-var regex = new Posiy('abcdefghi');
-console.log(regex.test('abcdefghi'));
-/*
-regex.getNextRule();
-console.log(regex);
-regex.getNextRule();
-console.log(regex);
-regex.getNextRule();
-console.log(regex);
-regex.getNextRule();
-console.log(regex);
-regex.getNextRule();
-console.log(regex);
-regex.getNextRule();
-console.log(regex);
-*/
+var regex = new Posiy('abcdefghijk');
+console.log(regex.test('abcdefghijk'));

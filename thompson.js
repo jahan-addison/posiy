@@ -1,22 +1,23 @@
-var Parser = require('./parser');
+var Parser     = require('./parser');
+var fragments  = require('./fragments'),
+  FragmentList = fragments.FragmentList,
+  Fragment     = fragments.Fragment;
 
 /* The McNaughton-Yamada-Thompson Algorithm */
 
 var Thompson = function(pattern) {
   this._pattern = pattern;
   this._parser  = new Parser(pattern);
-}
-
-
+};
 
 Thompson.prototype = (function() {
   /*
    ** Private
    */
-  var automaton       = [],
+  var automaton       = new FragmentList(),
       stack           = [],
       state           = 0,
-      temp, nfa,
+      temp,
       operatorOrder   = Object.freeze({
         '(': 1,
         ')': 1,
@@ -25,12 +26,18 @@ Thompson.prototype = (function() {
         '|': 4,
        });
 
-  var symbol = function(s) {
-    nfa     = [];
-    temp    = {};
-    temp[s] = [++state];
-    nfa.push(temp);
-    return nfa; 
+  var connect = function(frag1, frag2) {
+    if (frag1 instanceof FragmentList) {
+      frag2.addState(++state);      
+      frag1.push(frag2);
+      return frag1;
+    } else {
+      temp = new FragmentList();
+      frag1.addState(++state);      
+      frag2.addState(++state);      
+      temp.append([frag1, frag2]);
+      return temp;      
+    }
   };
 
   /*
@@ -41,29 +48,19 @@ Thompson.prototype = (function() {
     var RPNArray = this._parser.parse(),
         token;
     while ((token = RPNArray.shift())) {
-      if (!(token in operatorOrder)) {
-        stack.push(symbol(token));
-      } else {
-        switch(token) {
-          case '.':
-            var e2 = stack.shift(),
-                e1 = stack.shift();
-            if (e2) {
-              e2.forEach(function(e) {
-                automaton.push(e);
-              });
-            }
-            if (e1) {
-              e1.forEach(function(e) {
-                automaton.push(e);
-              });
-            }
-        }
+      switch(token) {
+        case '.':
+          var e2 = stack.shift(),
+              e1 = stack.shift();
+          stack.unshift(connect(e2, e1));
+          break;
+        default:
+          stack.push(new Fragment(token));
+          break;
       }
     }
-    if (!RPNArray.length) {
-      automaton.push({});
-    }
+    automaton = stack[0].flatten();
+    automaton.push({});
     return automaton;
   };
 
