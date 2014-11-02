@@ -14,5 +14,5 @@ Posiy.prototype.test = function(str) {
   return DFA.test(str);
 };
 
-var regex = new Posiy('abcdefghijk');
-console.log(regex.test('abcdefghijk'));
+var regex = new Posiy('abc|def');
+console.log(regex.test('abc'));
