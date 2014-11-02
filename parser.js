@@ -14,11 +14,11 @@ Parser.prototype = (function() {
     var outputQueue   = [],
       operatorStack   = [],
       operatorOrder   = Object.freeze({
-        '(': 1,
-        ')': 1,
-        '*': 2,
-        '.': 3, // we will let '.' stand for concatenation here
-        '|': 4,
+        '(': 4,
+        ')': 4,
+        '*': 3,
+        '.': 2, // we will let '.' stand for concatenation here
+        '|': 1,
        });
 
   /*
@@ -38,21 +38,31 @@ Parser.prototype = (function() {
         switch (token) {
           case 'KLEENE_STAR':
             concat = false;
-            operatorStack.unshift('*');    
+            operatorStack.push('*');    
             break;
           case 'CHAR':
             if (concat) {
-              operatorStack.unshift('.');    
+              if (operatorStack.length) {
+                if (operatorOrder[operatorStack[0]] >= operatorOrder['.']) {
+                  outputQueue.push(operatorStack.pop());
+                }
+              }
+              operatorStack.push('.');    
             } else if (this._lexer.pointer == this.pattern.length &&
               operatorStack[0] == '*') {
-              operatorStack.unshift('.');                  
+              operatorStack.push('.');                  
             }
             concat = true;
             outputQueue.push(this._lexer.scanner);
             break;
           case 'UNION':
             concat = false;
-            operatorStack.unshift('|');
+            if (operatorStack.length) {
+              if (operatorOrder[operatorStack[0]] >= operatorOrder['|']) {
+                outputQueue.push(operatorStack.pop());
+              }
+            }
+            operatorStack.push('|');
         }
       }
       while (operatorStack.length) {
@@ -66,8 +76,5 @@ Parser.prototype = (function() {
    };
 
 })();
-
-//var test = new Parser('a*|b');
-//console.log(test.RPN());
 
 module.exports = Parser;
