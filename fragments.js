@@ -20,15 +20,28 @@ FragmentList.prototype.first = function() {
   return this.fragments[0];
 };
 
+FragmentList.prototype.index = function(i) {
+  return this.fragments[i];
+};
+
+FragmentList.prototype.each = function(callback) {
+  this.fragments.forEach(callback);
+};
+
+FragmentList.prototype.length = function(callback) {
+  return this.fragments.length;
+};
+
 FragmentList.prototype.last  = function() {
   return this.fragments[this.fragments.length-1];
 };
 
 FragmentList.prototype.append = function(list) {
-  var that = this;
+  var that = this,
+      i    = 0;
   if (list instanceof FragmentList) {
-    while(list.fragments.length) {
-      this.push(list.shift());
+    while(i < list.fragments.length) {
+      that.fragments.push(list.index(i++));
     }
   } else {
     list.forEach(function(e) {
@@ -40,18 +53,17 @@ FragmentList.prototype.append = function(list) {
 FragmentList.prototype.flatten = function() {
   var obj;
   return this.fragments.map(function(e) {
-    obj    = {};
-    obj[e] = e.get();
-    return obj;
+    return e.toObject();
   });
 };
 
-var Fragment = function(key) {
+var Fragment = function(key, state) {
   this.key   = key;
-  this.value = [];
+  this.value = state ? [state] : [];
 };
 
 Fragment.prototype = (function() {
+  var obj;
   return {
     Constructor: Fragment,
     get: function() {
@@ -60,8 +72,16 @@ Fragment.prototype = (function() {
     toString: function() {
       return this.key;
     },
+    toObject: function() {
+      obj       = {};
+      obj[this] = this.get();
+      return obj;
+    },
     addState: function(state) {
       this.value.push(state);
+    },
+    updateState: function(i, state) {
+      this.value[i] = state;
     }
   };
 
